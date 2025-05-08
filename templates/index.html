@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>To-Do-Daily</title>
+
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='assets/planner.ico') }}" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter';
+            background-color: #59D5E0;
+            font-weight: 600;
+            font-style: normal;
+        }
+
+        #sortable-list {
+            margin: 0;
+            padding: 0;
+        }
+
+        .btn-danger {
+            background-color: #F4538A !important;
+            border-radius: 10px;
+        }
+
+        .sortable-item {
+            padding: 10px;
+            margin: 7px 0;
+            cursor: grab;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: none;
+            background-color: #F5DD61;
+            border-radius: 15px;
+        }
+
+        .completed {
+            text-decoration: line-through;
+            color: gray;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        #add-task-container {
+            margin-top: 20px;
+        }
+
+        #add-task-container input {
+            padding: 5px;
+            margin-right: 10px;
+            border-radius: 10px;
+        }
+
+        .list-selector {
+            border-radius: 10px;
+        }
+        select
+                {
+
+                  border-radius: 10px;
+                 }
+    </style>
+</head>
+<body>
+    <!-- Dropdown menu to select a to-do list -->
+    <select id="list-selector" class = "m-2">
+        {% for list in to_do_lists %}
+            <option value="{{ list.list_id }}" {% if list.list_id == current_list.list_id %}selected{% endif %}>
+                Date: {{ list.date_of_creation }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <div class="container">
+        <div class="row">
+            <!-- Left Column -->
+            <div class="col-md-1"></div>
+
+            <!-- Middle Column -->
+            <div class="col-md-10 mx-4">
+                <ul id="sortable-list">
+                    {% for task in current_list.tasks %}
+                        <li class="sortable-item {{ 'completed' if task.completed else '' }}" data-id="{{ loop.index0 }}">
+                            <span>{{ loop.index0 + 1 }}. {{ task.content }}</span>
+                            <div class="buttons">
+                                <button style="border: none; background-color: #F5DD61;" onclick="toggleComplete('{{ loop.index0 }}')"><i class="fa-solid fa-check"></i></button>
+                                <button style="border: none; background-color: #F5DD61;" onclick="deleteTask('{{ loop.index0 }}')"><i class="fa-solid fa-trash"></i></button>
+                                <button style="border: none; background-color: #F5DD61;" onclick="copyTask('{{ loop.index0 }}')"><i class="fa-regular fa-copy"></i></button>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                <!-- Container for the add task input and save button -->
+                <div id="add-task-container" class="">
+                    <input type="text" id="new-task-content" style="border: none;" placeholder="Enter new task" autocomplete="off">
+                    <button class="btn-danger p-1 my-1" style="border: none;" id="save-task">Save Task</button>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-md-1"></div>
+        </div>
+    </div>
+
+    <!-- Include Sortable.js -->
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            var el = document.getElementById('sortable-list');
+            var listSelector = document.getElementById('list-selector');
+            var saveTaskButton = document.getElementById('save-task');
+            var newTaskContentInput = document.getElementById('new-task-content');
+            var currentListId = listSelector.value;
+
+            newTaskContentInput.focus();
+
+            // Load saved copied text from local storage
+            var savedCopiedText = localStorage.getItem('copiedTaskContent') || '';
+            newTaskContentInput.value = savedCopiedText;
+
+            // Handle Enter key press for saving task
+            newTaskContentInput.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault(); // Prevent form submission or other default actions
+                    saveTaskButton.click(); // Trigger the click event on the save button
+                }
+            });
+
+            var sortable = Sortable.create(el, {
+                onEnd: function (evt) {
+                    var items = el.children;
+                    var order = Array.from(items).map(item => item.getAttribute('data-id'));
+
+                    // Send the new order to the server
+                    fetch('/update_order', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            order: order,
+                            list_id: currentListId
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            // Update task numbers and IDs
+                            updateTaskNumbers();
+                        }
+                    });
+                }
+            });
+
+            listSelector.addEventListener('change', function() {
+                var listId = listSelector.value;
+                window.location.href = '/list/' + listId;
+            });
+
+            saveTaskButton.addEventListener('click', function() {
+                var newTaskContent = newTaskContentInput.value;
+                if (newTaskContent.trim() === '') return;
+
+                fetch('/add_task', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        list_id: currentListId,
+                        content: newTaskContent
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        var newTask = data.task;
+                        var taskList = document.getElementById('sortable-list');
+                        var newTaskIndex = taskList.children.length;
+                        var newTaskItem = document.createElement('li');
+                        newTaskItem.className = 'sortable-item';
+                        newTaskItem.setAttribute('data-id', newTaskIndex);
+                        newTaskItem.innerHTML = `
+                            <span>${newTaskIndex + 1}. ${newTask.content}</span>
+                            <div class="buttons">
+                                <button style="border: none; background-color: #F5DD61;" onclick="toggleComplete('${newTaskIndex}')"><i class="fa-solid fa-check"></i></button>
+                                <button style="border: none; background-color: #F5DD61;" onclick="deleteTask('${newTaskIndex}')"><i class="fa-solid fa-trash"></i></button>
+                                <button style="border: none; background-color: #F5DD61;" onclick="copyTask('${newTaskIndex}')"><i class="fa-regular fa-copy"></i></button>
+                            </div>
+                        `;
+                        taskList.appendChild(newTaskItem);
+                        newTaskContentInput.value = ''; // Clear input box
+                        newTaskContentInput.focus();
+                        // Reset localStorage on save
+                        localStorage.removeItem('copiedTaskContent');
+                    } else {
+                        console.error('Failed to add task:', data.message);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        });
+
+        function updateTaskNumbers() {
+            var items = document.querySelectorAll('.sortable-item');
+            items.forEach((el, idx) => {
+                el.setAttribute('data-id', idx);
+                el.querySelector('span').textContent = `${idx + 1}. ${el.querySelector('span').textContent.split('. ')[1]}`;
+                el.querySelector('.buttons button:nth-child(1)').setAttribute('onclick', `toggleComplete('${idx}')`);
+                el.querySelector('.buttons button:nth-child(2)').setAttribute('onclick', `deleteTask('${idx}')`);
+                el.querySelector('.buttons button:nth-child(3)').setAttribute('onclick', `copyTask('${idx}')`);
+            });
+        }
+
+        function toggleComplete(taskIndex) {
+            fetch('/update_task', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    list_id: document.getElementById('list-selector').value,
+                    task_index: taskIndex,
+                    action: 'toggle_complete'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    var item = document.querySelector(`.sortable-item[data-id='${taskIndex}']`);
+                    item.classList.toggle('completed');
+                }
+            });
+        }
+
+        function deleteTask(taskIndex) {
+            fetch('/update_task', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    list_id: document.getElementById('list-selector').value,
+                    task_index: taskIndex,
+                    action: 'delete'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    var item = document.querySelector(`.sortable-item[data-id='${taskIndex}']`);
+                    item.remove();
+                    // Update task numbers and IDs after deletion
+                    updateTaskNumbers();
+                }
+            });
+        }
+
+        function copyTask(taskIndex) {
+            var item = document.querySelector(`.sortable-item[data-id='${taskIndex}']`);
+            var taskContent = item.querySelector('span').textContent.split('. ')[1];
+            var newTaskContentInput = document.getElementById('new-task-content');
+            newTaskContentInput.value = taskContent;
+
+            // Save copied content to local storage
+            localStorage.setItem('copiedTaskContent', taskContent);
+        }
+    </script>
+</body>
+</html>

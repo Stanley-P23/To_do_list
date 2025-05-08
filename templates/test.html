@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+<head>
+
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Edu+AU+VIC+WA+NT+Hand:wght@400..700&display=swap" rel="stylesheet">
+
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+
+     body {
+      font-family: 'Edu AU VIC WA NT Hand';
+
+    }
+
+
+    .no-border {
+      border: none;
+      outline: none;
+      box-shadow: none;
+      resize: none; /* Optional: to disable resizing */
+      overflow-y: hidden; /* Hides the vertical scrollbar */
+      font-size: 40px;
+    }
+    .no-border:focus {
+      border: none;
+      outline: none;
+      box-shadow: none;
+    }
+
+     .form-control {
+            width: 100%; /* Ensures textarea takes full width of the column */
+        }
+</style>
+<title>Hurry up, Poet!</title>
+
+
+</head>
+<body>
+
+ <div class="container">
+        <div class="row justify-content-center py-5">
+            <div class="col-md-4 column">
+
+            </div>
+
+            <div class="col-md-4 column">
+                            <textarea class="form-control no-border wd-100" id="text" rows="20" autofocus></textarea>
+
+            </div>
+
+            <div class="col-md-4 column">
+
+            </div>
+        </div>
+    </div>
+
+
+
+
+<script>
+
+
+    document.addEventListener('DOMContentLoaded', (event) => {
+            const inputBox = document.getElementById('text');
+            let typingTimer;
+            const doneTypingInterval = 10000; // Time in ms (1 second)
+
+            function doneTyping() {
+
+                   const some_text=document.getElementById('text');
+                   some_text.style.display='none';
+
+            }
+
+            inputBox.addEventListener('keyup', () => {
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(doneTyping, doneTypingInterval);
+            });
+
+            inputBox.addEventListener('keydown', () => {
+                clearTimeout(typingTimer);
+            });
+        });
+
+
+
+
+
+
+
+
+</script>
+
+
+
+</body>
+</html>

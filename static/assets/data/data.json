@@ -1,0 +1,120 @@
+{
+    "to_do_lists": [
+        {
+            "list_id": "9",
+            "date_of_creation": "2024-08-10",
+            "tasks": [
+                {
+                    "task_id": "3",
+                    "content": "Research travel options",
+                    "completed": false
+                },
+                {
+                    "task_id": "1",
+                    "content": "Finish reading book",
+                    "completed": false
+                },
+                {
+                    "task_id": "4",
+                    "content": "Update website",
+                    "completed": false
+                },
+                {
+                    "task_id": "2",
+                    "content": "Start new course",
+                    "completed": false
+                },
+                {
+                    "task_id": "5",
+                    "content": "Host dinner party",
+                    "completed": false
+                }
+            ]
+        },
+        {
+            "list_id": "10",
+            "date_of_creation": "2024-08-15",
+            "tasks": [
+                {
+                    "content": "Zr\u00f3b jeszcze to i tamto!! :) :) :)",
+                    "completed": true
+                },
+                {
+                    "task_id": "2",
+                    "content": "Write project proposal",
+                    "completed": false
+                },
+                {
+                    "task_id": "5",
+                    "content": "Plan new goals",
+                    "completed": false
+                },
+                {
+                    "content": "fdas",
+                    "completed": false
+                },
+                {
+                    "content": "fds",
+                    "completed": true
+                }
+            ]
+        },
+        {
+            "list_id": "11",
+            "date_of_creation": "2024-08-05",
+            "tasks": [
+                {
+                    "content": "Co\u015b tam",
+                    "completed": false
+                },
+                {
+                    "content": "Zr\u00f3b",
+                    "completed": false
+                },
+                {
+                    "content": "fda",
+                    "completed": false
+                },
+                {
+                    "content": "fdsa",
+                    "completed": false
+                },
+                {
+                    "content": "Zr\u00f3b jeszcze to i tamto!! :) :) :)",
+                    "completed": false
+                },
+                {
+                    "content": "dsa",
+                    "completed": false
+                },
+                {
+                    "content": "dsa",
+                    "completed": false
+                },
+                {
+                    "content": "dsa",
+                    "completed": false
+                }
+            ]
+        },
+        {
+            "list_id": "12",
+            "date_of_creation": "2024-08-06",
+            "tasks": [
+                {
+                    "content": "Zr\u00f3b to!",
+                    "completed": false
+                },
+                {
+                    "content": "Zr\u00f3b tamto!",
+                    "completed": false
+                }
+            ]
+        },
+        {
+            "list_id": "13",
+            "date_of_creation": "2025-05-08",
+            "tasks": []
+        }
+    ]
+}
